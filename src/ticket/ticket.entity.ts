@@ -1,27 +1,33 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { ticketStatusTypes } from "./ticket.model";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from 'typeorm';
+import { ticketStatusTypes } from './ticket.enum';
 
 @Entity()
 export class Ticket extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id : number;
+    id: number;
 
     @Column()
-    name : string;
+    title: string;
 
     @Column()
-    description : string;
+    description: string;
 
     @Column()
-    status : ticketStatusTypes
+    status: ticketStatusTypes;
 
     @Column()
-    uniqueCode : string;
+    uniqueCode: string;
 
-    @Column()
-    created_at : Date;
+    @CreateDateColumn()
+    created_at: Date;
 
-    @Column()
-    updated_at : Date
+    @UpdateDateColumn()
+    updated_at: Date;
 }
-
