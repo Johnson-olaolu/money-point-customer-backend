@@ -2,8 +2,6 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@
 import { CreateTicketDto } from './dto/createTicketDto';
 import { UpdateTicketDto } from './dto/updateTicketDto';
 import { UpdateTicketStatusDto } from './dto/updateTicketStatusDto';
-import { Ticket } from './ticket.entity';
-import { ticketStatusTypes } from './ticket.enum';
 import { TicketService } from './ticket.service';
 
 @Controller('ticket')
@@ -20,6 +18,16 @@ export class TicketController {
         return  await this.ticketService.createNewTicket(createTicketDto);
     }
     
+    @Get("/logs")
+   async getAllTicketLogs() {
+        return  await this.ticketService.getAllTicketLogs()
+   }
+
+   @Get("/logs/:id")
+   async getTicketLogs(@Param( "id", ParseIntPipe) ticketId : Number) {
+        return await this.ticketService.getSingleTicketLogs(ticketId)
+   }
+
     @Get("/:id")
     async getTicketById(@Param("id", ParseIntPipe) ticketId : Number ) {
         return await this.ticketService.getTicketById(ticketId)
@@ -40,5 +48,7 @@ export class TicketController {
        const { status } = body
         return await this.ticketService.updateTicketStatus(ticketId, status)
    }
+
+   
 }
 

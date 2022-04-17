@@ -1,29 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as moment from 'moment';
 import { CreateTicketDto } from './dto/createTicketDto';
 import { UpdateTicketDto } from './dto/updateTicketDto';
+import { TicketLog } from './ticket-log.entity';
+import { TicketLogsRepository } from './ticket-log.repository';
 import { Ticket } from './ticket.entity';
 import { ticketStatusTypes } from './ticket.enum';
 import { TicketRepository } from './ticket.repository';
+import * as uniqid from 'uniqid';
 
 @Injectable()
 export class TicketService {
-    constructor ( @InjectRepository(TicketRepository) private ticketRepository: TicketRepository) {}
+    constructor (
+         @InjectRepository(TicketRepository) private ticketRepository: TicketRepository, 
+         @InjectRepository(TicketLogsRepository) private ticketLogsRepository : TicketLogsRepository
+    ) {}
 
 
     //create new Ticket 
     createNewTicket =async  (createTicketDto : CreateTicketDto)  : Promise<{success : true, data : Ticket}> => {
         const { title , description} = createTicketDto
 
-        let newTicketData =  {
+        const presentDate = moment().format("YYYYMMDD")
+        const uniqueCode = uniqid(`${title[0]}-`, `-${presentDate}`)
+        const newTicketData =  {
             title : title,
             description : description,
             status : ticketStatusTypes.OPENED,
-            uniqueCode : "testcode"
+            uniqueCode : uniqueCode
         }
+
         
         const newTicket = await this.ticketRepository.createNewTicket(newTicketData);
 
+        const newTicketLogData = {
+            ticketId : newTicket.id,
+            action : `new ticket ${newTicket.uniqueCode}:${newTicket.title} created`,
+            actionDate : moment().toDate()
+        }  
+        await this.ticketLogsRepository.createNewTicketLog(newTicketLogData)      
         return {
             success : true,
             data : newTicket
@@ -48,15 +64,18 @@ export class TicketService {
     } 
 
     async deleteTicket (ticketId) : Promise<{success : boolean, message : string}> {
-        const result =  await this.ticketRepository.delete(ticketId)
+        const ticketToDelete = await this.ticketRepository.findOne(ticketId)
+        
 
-        if(!result.affected) {
+        if(!ticketToDelete) {
             throw new NotFoundException(`Ticket with id ${ticketId} not found`)
         }
 
+        await this.ticketRepository.delete(ticketId)  
+
         return {
             success : true, 
-            message : `Ticket ${ticketId} deleted`
+            message : `Ticket ${ticketToDelete.uniqueCode} deleted`
         }
     }
 
@@ -68,18 +87,28 @@ export class TicketService {
             throw new NotFoundException(`Ticket with id ${ticketId} not found`)
         }
 
+        let action = "";
         if(title) {
             ticketToUpdate.title = title
+            action += ` changed title to ${title}`
         }
         if(description) {
             ticketToUpdate.description = description
+            action += ` changed description to ${description}`
         }
 
-        await ticketToUpdate.save
+        await ticketToUpdate.save()
 
+        const newTicketLogData = {
+            ticketId : ticketToUpdate.id,
+            action : `new ticket ${ticketToUpdate.uniqueCode}:${ticketToUpdate.title} updated` + action,
+            actionDate : new Date()
+        }  
+
+        await this.ticketLogsRepository.createNewTicketLog(newTicketLogData)
         return {
-            success: true ,
-            message : `ticket ${ticketToUpdate.id} updated`,
+            success: true,
+            message : `ticket ${ticketToUpdate.uniqueCode} updated`,
             data : ticketToUpdate
         }
     }
@@ -101,4 +130,26 @@ export class TicketService {
             data : ticketToUpdate
         }
     } 
+
+    async getAllTicketLogs () : Promise<{success : Boolean , data : TicketLog[]}>{
+        const ticketLogs = await this.ticketLogsRepository.find()
+        return {
+            success : true,
+            data : ticketLogs
+        }
+    }
+
+    async getSingleTicketLogs (ticketId):Promise<{success : Boolean , data : TicketLog[]}> {
+        const ticketToUpdateLog = await this.ticketRepository.findOne(ticketId)
+
+        if(!ticketToUpdateLog) {
+            throw new NotFoundException(`Ticket with id ${ticketId} not found`)
+        }
+
+        const ticketLogs = await this.ticketLogsRepository.find({ticketId : ticketId})
+        return {
+            success : true,
+            data : ticketLogs
+        }
+    }
 }

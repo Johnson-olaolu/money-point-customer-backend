@@ -3,9 +3,11 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { TicketLog } from './ticket-log.entity';
 import { ticketStatusTypes } from './ticket.enum';
 
 @Entity()
@@ -22,7 +24,9 @@ export class Ticket extends BaseEntity {
     @Column()
     status: ticketStatusTypes;
 
-    @Column()
+    @Column({
+        unique : true
+    })
     uniqueCode: string;
 
     @CreateDateColumn()
