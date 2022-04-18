@@ -1,15 +1,23 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CustomerSupportLevel } from './customer-support-level.entity';
+import {UserRepository } from '../user/user.repository'
 import { CustomerSupportLevelRepository } from './customer-support-level.repository';
+import { CreateCustomerSupportDto } from './dto/createCustomerSupportDto';
 import { CreateCustomerSupportLevelDto } from './dto/createCustomerSupportLevelDto';
 import { UpdateCustomerSupportLevelDto } from './dto/updateCustomerSupportLevelDto';
+import { CustomerSupport } from './customer-support.entity';
+import { CustomerSupportRepository } from './customer-support.repository';
 
 @Injectable()
 export class CustomerSupportService {
     constructor(
         @InjectRepository(CustomerSupportLevelRepository)
         private customerSupportLevelRepository: CustomerSupportLevelRepository,
+        @InjectRepository(UserRepository)
+        private userRepository : UserRepository,
+        @InjectRepository(CustomerSupport)
+        private customerSupportRepository : CustomerSupportRepository
     ) {}
 
     async getAllCustomerSupportLevels(): Promise<{
@@ -93,5 +101,32 @@ export class CustomerSupportService {
             success: true,
             message: `Customer support level ${customerSupportLeveltoDelete.name} deleted`,
         };
+    }
+
+    async createCustomerSupport (createCustomerSupportDto  : CreateCustomerSupportDto) {
+        const { firstName, lastName , email , levelId, password} = createCustomerSupportDto
+
+        const newUserDetails = {
+            firstName,
+            lastName,
+            email,
+            password
+        }
+
+        const newUser = await this.userRepository.createNewUser(newUserDetails)
+
+        const customerSupportLevel = await this.customerSupportLevelRepository.findOne(levelId)
+
+        const newCustomerSupportDetails = {
+            level : customerSupportLevel,
+            user : newUser
+        }
+
+        const newCustomerSupport  = await this.customerSupportRepository.createCustomerSupport(newCustomerSupportDetails)
+
+        return {
+            success : true,
+            data : newCustomerSupport
+        }
     }
 }
