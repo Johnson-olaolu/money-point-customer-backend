@@ -16,7 +16,7 @@ export class CustomerSupportService {
         private customerSupportLevelRepository: CustomerSupportLevelRepository,
         @InjectRepository(UserRepository)
         private userRepository : UserRepository,
-        @InjectRepository(CustomerSupport)
+        @InjectRepository(CustomerSupportRepository)
         private customerSupportRepository : CustomerSupportRepository
     ) {}
 
@@ -106,27 +106,33 @@ export class CustomerSupportService {
     async createCustomerSupport (createCustomerSupportDto  : CreateCustomerSupportDto) {
         const { firstName, lastName , email , levelId, password} = createCustomerSupportDto
 
-        const newUserDetails = {
-            firstName,
-            lastName,
-            email,
-            password
+        try {
+            const newUserDetails = {
+                firstName,
+                lastName,
+                email,
+                password
+            }
+    
+            
+            const newUser = await this.userRepository.createNewUser(newUserDetails)
+    
+            const customerSupportLevel = await this.customerSupportLevelRepository.findOne(levelId)
+    
+            const newCustomerSupportDetails = {
+                level : customerSupportLevel,
+                user : newUser
+            }
+    
+            const newCustomerSupport  = await this.customerSupportRepository.createCustomerSupport(newCustomerSupportDetails)
+    
+            return {
+                success : true,
+                data : newCustomerSupport
+            }
+        } catch (error) {
+            throw new BadRequestException(error.detail)
         }
-
-        const newUser = await this.userRepository.createNewUser(newUserDetails)
-
-        const customerSupportLevel = await this.customerSupportLevelRepository.findOne(levelId)
-
-        const newCustomerSupportDetails = {
-            level : customerSupportLevel,
-            user : newUser
-        }
-
-        const newCustomerSupport  = await this.customerSupportRepository.createCustomerSupport(newCustomerSupportDetails)
-
-        return {
-            success : true,
-            data : newCustomerSupport
-        }
+    
     }
 }

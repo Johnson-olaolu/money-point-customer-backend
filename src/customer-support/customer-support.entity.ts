@@ -1,5 +1,5 @@
 import { User } from "src/user/user.entity";
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { CustomerSupportLevel } from "./customer-support-level.entity";
 
 
@@ -14,4 +14,10 @@ export class CustomerSupport extends BaseEntity {
 
     @ManyToOne( () => CustomerSupportLevel)
     level : CustomerSupportLevel 
+
+    @CreateDateColumn()
+    createdAt : Date
+
+    @UpdateDateColumn()
+    updatedAt : Date
 }

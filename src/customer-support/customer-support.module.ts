@@ -8,8 +8,15 @@ import { CustomerSupportRepository } from './customer-support.repository';
 import { CustomerSupportService } from './customer-support.service';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([CustomerSupportLevelRepository,  CustomerSupportRepository])],
-  controllers: [CustomerSupportController],
-  providers: [CustomerSupportService]
+    imports: [
+        UserModule,
+        TypeOrmModule.forFeature([
+            UserRepository,
+            CustomerSupportRepository,
+            CustomerSupportLevelRepository,
+        ]),
+    ],
+    controllers: [CustomerSupportController],
+    providers: [CustomerSupportService],
 })
 export class CustomerSupportModule {}

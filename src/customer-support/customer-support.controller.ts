@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CustomerSupportLevelRepository } from './customer-support-level.repository';
 import { CustomerSupportService } from './customer-support.service';
+import { CreateCustomerSupportDto } from './dto/createCustomerSupportDto';
 import { CreateCustomerSupportLevelDto } from './dto/createCustomerSupportLevelDto';
 import { UpdateCustomerSupportLevelDto } from './dto/updateCustomerSupportLevelDto';
 
@@ -42,5 +43,10 @@ export class CustomerSupportController {
     @Delete('/level/:levelId')
     async deleteCustomerSupportLevel(@Param("levelId", ParseIntPipe) levelId : number) {
         return await this.customerSupportService.deleteCustomerSupportLevel(levelId)
+    }
+
+    @Post()
+    async createCustomerSupport ( @Body() createCustomerSupportDto : CreateCustomerSupportDto) {
+        return await this.customerSupportService.createCustomerSupport(createCustomerSupportDto)
     }
 }
