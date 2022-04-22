@@ -9,6 +9,7 @@ import { CustomerSupportModule } from './customer-support/customer-support.modul
 import { SeedModule } from './shared/seed.module';
 import { TicketModule } from './ticket/ticket.module';
 import { UserModule } from './user/user.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
     imports: [
@@ -17,7 +18,8 @@ import { UserModule } from './user/user.module';
         TicketModule,
         CustomerSupportModule,
         UserModule,
-        SeedModule
+        SeedModule,
+        CategoryModule
     ],
     controllers: [AppController],
     providers: [AppService],
