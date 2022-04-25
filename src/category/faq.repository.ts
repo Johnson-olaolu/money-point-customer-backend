@@ -4,12 +4,12 @@ import { Faq } from "./faq.entity";
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
-    async createNewFaq (faqDetails : {title : string, solution : string, categories : Category[]}) {
+    async createNewFaq (faqDetails : {question : string, solution : string, category : Category, subCategory : string}) {
         const newFaq = new Faq
-        newFaq.title = faqDetails.title
+        newFaq.question = faqDetails.question
         newFaq.solution = faqDetails.solution
-        newFaq.categories = faqDetails.categories
-
+        newFaq.category = faqDetails.category
+        newFaq.subCategory = faqDetails.subCategory
         await newFaq.save()
         return newFaq;
     }

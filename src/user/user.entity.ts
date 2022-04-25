@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Role } from "./role.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -20,6 +21,11 @@ export class User extends BaseEntity {
         nullable : false
     }) 
     email : string;
+
+    @ManyToOne( () => Role , {
+        nullable : false
+    })
+    role : Role
 
     @Column( {
         nullable : false

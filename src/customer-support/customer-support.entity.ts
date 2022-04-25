@@ -8,11 +8,16 @@ export class CustomerSupport extends BaseEntity {
     @PrimaryGeneratedColumn()
     id : number
 
-    @OneToOne( () => User)
+    @OneToOne( () => User , {
+        nullable : false,
+        onDelete : "CASCADE"
+    })
     @JoinColumn()
     user : User
 
-    @ManyToOne( () => CustomerSupportLevel)
+    @ManyToOne( () => CustomerSupportLevel ,{
+        cascade : ["remove"]
+    })
     level : CustomerSupportLevel 
 
     @CreateDateColumn()

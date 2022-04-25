@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { QueryErrorFilter } from './middleware/constraintErrorHndler';
+import { QueryErrorFilter } from './middleware/constraintErrorHandler';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

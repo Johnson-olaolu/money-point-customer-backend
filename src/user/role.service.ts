@@ -23,7 +23,6 @@ export class RoleService {
 
     async updateRole (roleDetails : {name : string, description : string, permissions? : string[]}) {
         const selectedRole = await this.roleRepository.findOne({name : roleDetails.name})
-
         const permissionsArray = []
 
         for(const p of roleDetails.permissions) {

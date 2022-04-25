@@ -41,5 +41,15 @@ export const roles = [
             "delete:ticket",
             "view:ticket-logs",
         ]
+    }, 
+    {
+        name : "guest",
+        description : "creates tickets",
+        permissions : [
+            "view:ticket",
+            "edit:ticket",
+            "delete:ticket",
+            "view:ticket-logs",
+        ]
     }
 ]

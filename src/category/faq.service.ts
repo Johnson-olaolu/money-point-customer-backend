@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { CustomerSupportLevelRepository } from "src/customer-support/customer-support-level.repository";
 import { CategoryRepository } from "./category.repository";
 import { CreateFaqDto } from "./dto/createFaqDto";
 import { UpdateFaqDto } from "./dto/updateFaqDto";
@@ -13,96 +12,77 @@ export class FaqService {
         @InjectRepository(CategoryRepository)
         private categoryRepository: CategoryRepository,
         @InjectRepository(FaqRepository) private faqRepository: FaqRepository,
-        @InjectRepository(CustomerSupportLevelRepository)
-        private customerSupportLevelRepository: CustomerSupportLevelRepository,
     ) {}
 
     async addNewFaq(
         createFaqDto: CreateFaqDto,
-    ): Promise<{ success: true; data: Faq }> {
-        const { title, solution, categoryIds } = createFaqDto;
+    ): Promise< Faq > {
+        const { question, solution, categoryId, subCategory} = createFaqDto;
 
-        const categoriesArray = [];
-        for (const cId of categoryIds) {
-            const category = await this.categoryRepository.findOne(cId);
-            categoriesArray.push(category);
-        }
+        const category = await this.categoryRepository.findOne(categoryId);
+
 
         const faqDetails = {
-            title,
+            question,
             solution,
-            categories: categoriesArray,
+            category,
+            subCategory
         };
 
         const newFaq = await this.faqRepository.createNewFaq(faqDetails);
-        return {
-            success: true,
-            data: newFaq,
-        };
+        return newFaq
     }
 
-    async getAllFaq(): Promise<{ success: Boolean; data: Faq[] }> {
+    async getAllFaq(): Promise< Faq[] > {
         const faqs = await this.faqRepository.find();
-        return {
-            success: true,
-            data: faqs,
-        };
+        return faqs
     }
 
-    async getSingleFaq(faqId): Promise<{ success: Boolean; data: Faq }> {
-        const faq = await this.faqRepository.findOne();
+    async getSingleFaq(faqId): Promise<Faq > {
+        const faq = await this.faqRepository.findOne(faqId);
 
         if (!faq) {
-            throw new NotFoundException('Could not find faq with this Id');
+            throw new NotFoundException(`Could not find faq with this id: ${faqId}`);
         }
-        return {
-            success: true,
-            data: faq,
-        };
+        return  faq
     }
 
-    async updateFaq(faqId, updateFaqDto: UpdateFaqDto) : Promise<{success : Boolean, message: string, data : Faq}> {
+    async updateFaq(faqId, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
         const faqToUpdate = await this.faqRepository.findOne(faqId);
 
-        const { title, solution, categoryIds } = updateFaqDto;
+        const { question, solution, categoryId, subCategory} = updateFaqDto;
 
         if (!faqToUpdate) {
-            throw new NotFoundException('Could not find faq with this Id');
+            throw new NotFoundException(`Could not find faq with this id: ${faqId}`);
         }
-        if (title) {
-            faqToUpdate.title = title;
+        if (question) {
+            faqToUpdate.question = question;
         }
         if (solution) {
             faqToUpdate.solution = solution;
         }
-        if (categoryIds) {
-            const categoriesArray = [];
-            for (const cId of categoryIds) {
-                const category = await this.categoryRepository.findOne(cId);
-                categoriesArray.push(category);
-            }
-            faqToUpdate.categories = categoriesArray
+        if (categoryId) {
+            const category = await this.categoryRepository.findOne(categoryId);
+            faqToUpdate.category =category
+        }
+
+        if(subCategory) {
+            faqToUpdate.subCategory = subCategory
         }
 
         await faqToUpdate.save()
 
-        return {
-            success : true, 
-            message :"faq updated successfullly",
-            data : faqToUpdate
-        }
+        return faqToUpdate
     }
 
-    async deleteFaq(faqId) {
+    async deleteFaq(faqId) : Promise<string>{
         const faqToDelete = await this.faqRepository.findOne(faqId)
         if (!faqToDelete) {
-            throw new NotFoundException('Could not find faq with this Id');
+            throw new NotFoundException(`Could not find faq with this id: ${faqId}`);
         }
         await this.faqRepository.delete(faqId)
 
-        return {
-            success : true,
-            message : "faq deleted successfully"
-        }
+        return `Faq ${faqToDelete.id}: ${faqToDelete.question} deleted successfully`
+
     }
 }

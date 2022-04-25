@@ -6,14 +6,21 @@ export class Faq extends BaseEntity {
     @PrimaryGeneratedColumn()
     id : number
 
-    @Column()
-    title : string
+    @Column({
+        nullable : false
+    })
+    question : string
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     solution : string
 
-    @ManyToMany( () => Category)
-    @JoinTable()
-    categories : Category[]
+    @ManyToOne( () => Category, {
+        nullable : false
+    })
+    category : Category
 
+    @Column()
+    subCategory : string
 }

@@ -1,14 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { boolean } from 'joi';
-import { CustomerSupportLevelRepository } from 'src/customer-support/customer-support-level.repository';
+import { CustomerSupportLevelService } from 'src/customer-support/customer-support-level.service';
 import { Category } from './category.entity';
 import { CategoryRepository } from './category.repository';
 import { CreateCategoryDto } from './dto/createCategoryDto';
-import { CreateFaqDto } from './dto/createFaqDto';
 import { UpdateCategoryDto } from './dto/updateCategoryDto';
-import { UpdateFaqDto } from './dto/updateFaqDto';
-import { Faq } from './faq.entity';
 import { FaqRepository } from './faq.repository';
 
 @Injectable()
@@ -17,32 +13,28 @@ export class CategoryService {
         @InjectRepository(CategoryRepository)
         private categoryRepository: CategoryRepository,
         @InjectRepository(FaqRepository) private faqRepository: FaqRepository,
-        @InjectRepository(CustomerSupportLevelRepository)
-        private customerSupportLevelRepository: CustomerSupportLevelRepository,
+        private customerSupportLevelService : CustomerSupportLevelService
     ) {}
 
-    async getAllCategories(): Promise<{ success: Boolean; data: Category[] }> {
+    async getAllCategories(): Promise< Category[]> {
         const categories = await this.categoryRepository.find();
         for(const category of categories) {
             category.subCategories = JSON.parse(category.subCategories)
         }
-        return {
-            success: true,
-            data: categories,
-        };
+        return categories
     }
 
     async addNewCategory(
         createCategoryDto: CreateCategoryDto,
-    ): Promise<{ success: Boolean; data: Category }> {
+    ): Promise<Category> {
         const { title , description, subCategories, customerSupportLevels } =
             createCategoryDto;
 
         const customerSupportLevelArray = [];
 
-        for (const level of customerSupportLevels) {
+        for (const levelId of customerSupportLevels) {
             const customerSupportLevel =
-                await this.customerSupportLevelRepository.findOne(level);
+                await this.customerSupportLevelService.getCustomerSupportLevel(levelId)
             customerSupportLevelArray.push(customerSupportLevel);
         }
 
@@ -58,15 +50,13 @@ export class CategoryService {
         );
 
         newCategory.subCategories = JSON.parse(newCategory.subCategories)
-        return {
-            success: true,
-            data: newCategory,
-        };
+       
+        return newCategory
     }
 
     async getSingleCategory(
         categoryId,
-    ): Promise<{ success: Boolean; data: Category }> {
+    ): Promise<Category> {
         const selectedCategory = await this.categoryRepository.findOne(
             categoryId,
         );
@@ -75,13 +65,10 @@ export class CategoryService {
             throw new NotFoundException('Could not find Category with this Id');
         }
         selectedCategory.subCategories  = JSON.parse(selectedCategory.subCategories)
-        return {
-            success: false,
-            data: selectedCategory,
-        };
+        return selectedCategory
     }
 
-    async updateCategory(categoryId, updateCategoryDto: UpdateCategoryDto) {
+    async updateCategory(categoryId, updateCategoryDto: UpdateCategoryDto) : Promise<Category> {
         const categoryToUpdate = await this.categoryRepository.findOne(
             categoryId,
         );
@@ -105,11 +92,9 @@ export class CategoryService {
             }
             if (customerSupportLevels) {
                 const customerSupportLevelsArray = [];
-                for (const levelId in customerSupportLevels) {
+                for (const levelId of customerSupportLevels) {
                     const customerSupportLevel =
-                        await this.customerSupportLevelRepository.findOne(
-                            levelId,
-                        );
+                        await this.customerSupportLevelService.getCustomerSupportLevel(levelId)
                     customerSupportLevelsArray.push(customerSupportLevel);
                 }
 
@@ -117,15 +102,12 @@ export class CategoryService {
                     customerSupportLevelsArray;
             }
             await categoryToUpdate.save();
-            return {
-                success: true,
-                message: 'category updated successfully',
-                data: categoryToUpdate,
-            };
+
+            return categoryToUpdate
         } catch (error) {}
     }
 
-    async deleteCategory(categoryId) {
+    async deleteCategory(categoryId) : Promise<string>{
         const categoryToDelete = await this.categoryRepository.findOne(
             categoryId,
         );
@@ -136,10 +118,7 @@ export class CategoryService {
 
         await this.categoryRepository.delete(categoryId);
 
-        return {
-            success: true,
-            message: 'category deleted successfully',
-        };
+        return  'category deleted successfully'
     }
 
 }

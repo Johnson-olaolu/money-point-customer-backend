@@ -6,18 +6,22 @@ export class Category extends BaseEntity {
     @PrimaryGeneratedColumn()
     id : number
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     title : string
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     description : string
 
     @ManyToMany( () => CustomerSupportLevel)
     @JoinTable()
     customerSupportLevels : CustomerSupportLevel[]
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     subCategories : string
-
-
 }

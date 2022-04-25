@@ -1,7 +1,8 @@
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateFaqDto {
-    @IsString() @IsNotEmpty() title : string
+    @IsString() @IsNotEmpty() question : string
     @IsString() @IsNotEmpty() solution : string
-    @IsArray() @IsNotEmpty() categoryIds : number[]
+    @IsArray() @IsNotEmpty() categoryId : number
+    @IsOptional() @IsNotEmpty() subCategory : string
 }

@@ -2,11 +2,15 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@
 import { CreateTicketDto } from './dto/createTicketDto';
 import { UpdateTicketDto } from './dto/updateTicketDto';
 import { UpdateTicketStatusDto } from './dto/updateTicketStatusDto';
+import { TicketLogsService } from './ticket-logs.service';
 import { TicketService } from './ticket.service';
 
 @Controller('ticket')
 export class TicketController {
-    constructor(private ticketService: TicketService) {}
+    constructor(
+        private ticketService: TicketService,
+        private ticketLogsService : TicketLogsService
+        ) {}
 
     @Get()
     async getAllTickets() {
@@ -20,16 +24,21 @@ export class TicketController {
     
     @Get("/logs")
    async getAllTicketLogs() {
-        return  await this.ticketService.getAllTicketLogs()
+        return  await this.ticketLogsService.getAllTicketLogs()
    }
 
    @Get("/logs/:id")
-   async getTicketLogs(@Param( "id", ParseIntPipe) ticketId : Number) {
-        return await this.ticketService.getSingleTicketLogs(ticketId)
+   async getTicketLogs(@Param( "id", ParseIntPipe) ticketId : number) {
+        return await this.ticketLogsService.getSingleTicketLogs(ticketId)
+   }
+
+   @Get("/ref/:ticketRef") 
+   async getTicketByRef(@Param() ticketRef : string) {
+       return await this.ticketService.getTicketByRef(ticketRef)
    }
 
     @Get("/:id")
-    async getTicketById(@Param("id", ParseIntPipe) ticketId : Number ) {
+    async getTicketById(@Param("id", ParseIntPipe) ticketId : number ) {
         return await this.ticketService.getTicketById(ticketId)
     }
 
@@ -39,16 +48,15 @@ export class TicketController {
    }
 
    @Put("/:id")
-   async updateTicket (@Param( "id", ParseIntPipe) ticketId : Number, @Body() updateTicketDto : UpdateTicketDto) {
+   async updateTicket (@Param( "id", ParseIntPipe) ticketId : number, @Body() updateTicketDto : UpdateTicketDto) {
         return await this.ticketService.updateTicket(ticketId, updateTicketDto)
    }
 
    @Put("/update-status/:id")
-   async updateTicketStatus (@Param( "id", ParseIntPipe) ticketId : Number, @Body() body : UpdateTicketStatusDto) {
+   async updateTicketStatus (@Param( "id", ParseIntPipe) ticketId : number, @Body() body : UpdateTicketStatusDto) {
        const { status } = body
         return await this.ticketService.updateTicketStatus(ticketId, status)
    }
 
-   
 }
 

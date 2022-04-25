@@ -15,19 +15,25 @@ export class Ticket extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     title: string;
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     description: string;
 
-    @Column()
+    @Column({
+        nullable : false
+    })
     status: ticketStatusTypes;
 
     @Column({
         unique : true
     })
-    uniqueCode: string;
+    ticketRef: string;
 
     @CreateDateColumn()
     created_at: Date;
