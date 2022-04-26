@@ -10,6 +10,7 @@ import { SeedModule } from './shared/seed.module';
 import { TicketModule } from './ticket/ticket.module';
 import { UserModule } from './user/user.module';
 import { CategoryModule } from './category/category.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -19,7 +20,10 @@ import { CategoryModule } from './category/category.module';
         CustomerSupportModule,
         UserModule,
         SeedModule,
-        CategoryModule
+        CategoryModule,
+        ConfigModule.forRoot({
+            isGlobal : true
+        })
     ],
     controllers: [AppController],
     providers: [AppService],

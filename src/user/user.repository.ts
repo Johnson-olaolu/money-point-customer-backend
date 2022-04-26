@@ -18,7 +18,7 @@ export class UserRepository extends Repository<User> {
         newUser.lastName = lastName.charAt(0).toUpperCase() + lastName.slice(1);
         newUser.email = email
         const salt =  bcrypt.genSaltSync(10);
-        const pass = bcrypt.hashSync(password, salt);
+        const pass = bcrypt.hashSync(password);
         newUser.password = pass;
         newUser.role = role;
         await newUser.save();
@@ -29,7 +29,7 @@ export class UserRepository extends Repository<User> {
         userPassword: string,
         password: string,
     ): Promise<Boolean> {
-        const result = await bcrypt.compareSync(userPassword, password);
+        const result = await bcrypt.compareSync(password, userPassword);
         return result;
     }
 }

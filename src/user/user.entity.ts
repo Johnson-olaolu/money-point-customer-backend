@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./role.entity";
+import * as bcrypt from 'bcryptjs';
 
 @Entity()
 export class User extends BaseEntity {
@@ -31,4 +32,12 @@ export class User extends BaseEntity {
         nullable : false
     })
     password : string
+
+    async comparePasswords(
+        userPassword: string,
+        password: string,
+    ): Promise<Boolean> {
+        const result = await bcrypt.compareSync(userPassword, password);
+        return result;
+    }
 }

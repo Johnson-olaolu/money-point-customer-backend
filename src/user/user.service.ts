@@ -31,4 +31,9 @@ export class UserService {
         const newUser = this.userRepository.createNewUser(newUserDetails)
         return newUser;
     }
+
+    async getUser ( email :string ) : Promise<User> {
+        const user = await this.userRepository.findOne({email : email})
+        return user
+    }
 }
