@@ -12,6 +12,7 @@ import { CustomerSupportModule } from 'src/customer-support/customer-support.mod
     CustomerSupportModule,
     TypeOrmModule.forFeature([FaqRepository, CategoryRepository,])],
   providers: [CategoryService,FaqService],
-  controllers: [CategoryController]
+  controllers: [CategoryController], 
+  exports: [CategoryService, TypeOrmModule]
 })
 export class CategoryModule {}

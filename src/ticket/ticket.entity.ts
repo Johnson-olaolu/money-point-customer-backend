@@ -1,8 +1,11 @@
+import { Category } from 'src/category/category.entity';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -31,9 +34,21 @@ export class Ticket extends BaseEntity {
     status: ticketStatusTypes;
 
     @Column({
+        nullable : false
+    })
+    email : string
+
+    @ManyToOne(() => Category)
+    @JoinColumn()
+    category : Category
+
+    @Column({
         unique : true
     })
     ticketRef: string;
+
+    @Column()
+    agentEmail : string
 
     @CreateDateColumn()
     created_at: Date;

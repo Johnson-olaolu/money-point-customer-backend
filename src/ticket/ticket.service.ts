@@ -9,6 +9,7 @@ import { Ticket } from './ticket.entity';
 import { ticketStatusTypes } from './ticket.enum';
 import { TicketRepository } from './ticket.repository';
 import * as uniqid from 'uniqid';
+import { CategoryService } from 'src/category/category.service';
 
 @Injectable()
 export class TicketService {
@@ -17,21 +18,27 @@ export class TicketService {
         private ticketRepository: TicketRepository,
         @InjectRepository(TicketLogsRepository)
         private ticketLogsRepository: TicketLogsRepository,
+        private categoryService : CategoryService
     ) {}
 
     //create new Ticket
     createNewTicket = async (
         createTicketDto: CreateTicketDto,
     ): Promise<Ticket> => {
-        const { title, description } = createTicketDto;
+        const { title, description, agentEmail, categoryId, subCategory , email} = createTicketDto;
 
         const presentDate = moment().format('YYYYMMDD');
         const ticketRef = uniqid(`${title[0]}-`, `-${presentDate}`);
+        const category = await this.categoryService.getSingleCategory(categoryId)
         const newTicketData = {
             title: title,
             description: description,
             status: ticketStatusTypes.OPENED,
             ticketRef: ticketRef,
+            category : category,
+            agentEmail : agentEmail,
+            email : email,
+            subCategory : subCategory
         };
 
         const newTicket = await this.ticketRepository.createNewTicket(
