@@ -35,6 +35,9 @@ export class CategoryService {
         for (const levelId of customerSupportLevels) {
             const customerSupportLevel =
                 await this.customerSupportLevelService.getCustomerSupportLevel(levelId)
+            if(!customerSupportLevel) {
+                throw new NotFoundException(`Cannot find customer support level for this id : ${levelId}`)
+            }
             customerSupportLevelArray.push(customerSupportLevel);
         }
 
@@ -102,7 +105,7 @@ export class CategoryService {
                     customerSupportLevelsArray;
             }
             await categoryToUpdate.save();
-
+            categoryToUpdate.subCategories = JSON.parse(categoryToUpdate.subCategories)
             return categoryToUpdate
         } catch (error) {}
     }

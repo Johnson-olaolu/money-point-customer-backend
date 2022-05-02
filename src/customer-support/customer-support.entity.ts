@@ -10,13 +10,16 @@ export class CustomerSupport extends BaseEntity {
 
     @OneToOne( () => User , {
         nullable : false,
+        eager : true,
         onDelete : "CASCADE"
     })
     @JoinColumn()
     user : User
 
     @ManyToOne( () => CustomerSupportLevel ,{
-        cascade : ["remove"]
+        nullable: false,
+        eager : true,
+        onUpdate: "CASCADE"
     })
     level : CustomerSupportLevel 
 

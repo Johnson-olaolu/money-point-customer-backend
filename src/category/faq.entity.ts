@@ -17,7 +17,8 @@ export class Faq extends BaseEntity {
     solution : string
 
     @ManyToOne( () => Category, {
-        nullable : false
+        nullable : false,
+        onDelete : "CASCADE"
     })
     category : Category
 

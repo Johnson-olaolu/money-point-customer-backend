@@ -17,6 +17,6 @@ import { CustomerSupportService } from './customer-support.service';
     ],
     controllers: [CustomerSupportController],
     providers: [CustomerSupportService, CustomerSupportLevelService],
-    exports : [CustomerSupportService, CustomerSupportLevelService]
+    exports : [CustomerSupportService, CustomerSupportLevelService, TypeOrmModule]
 })
 export class CustomerSupportModule {}

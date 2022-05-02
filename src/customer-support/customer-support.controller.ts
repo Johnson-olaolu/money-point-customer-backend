@@ -34,6 +34,10 @@ export class CustomerSupportController {
             createCustomerSupportLevel,
         );
     }
+    @Get('/level/:levelId')
+    async getSingleCustomerSupportLevel(@Param("levelId", ParseIntPipe) levelId : number) {
+        return await this.customerSupportLevelService.getSingleCustomerSupportLevel(levelId)
+    }
 
     @Put('/level/:levelId')
     async updateCustomerSupportLevel(
@@ -46,6 +50,11 @@ export class CustomerSupportController {
     @Delete('/level/:levelId')
     async deleteCustomerSupportLevel(@Param("levelId", ParseIntPipe) levelId : number) {
         return await this.customerSupportLevelService.deleteCustomerSupportLevel(levelId)
+    }
+
+    @Get()
+    async getAllCustomerSupport() {
+        return await this.customerSupportService.getAllCustomerSupport()
     }
 
     @Post()

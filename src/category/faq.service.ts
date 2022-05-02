@@ -20,7 +20,15 @@ export class FaqService {
         const { question, solution, categoryId, subCategory} = createFaqDto;
 
         const category = await this.categoryRepository.findOne(categoryId);
+        if(!category) {
+            throw new NotFoundException(`Cannot find category with id ${categoryId}`)
+        }
+        const subCategories : string[] = JSON.parse(category.subCategories) 
 
+        category.subCategories = JSON.parse(category.subCategories) 
+        if(subCategories.includes(subCategory) == false){
+            throw new NotFoundException(`Cannot find sub-category ${subCategory}`)
+        }
 
         const faqDetails = {
             question,

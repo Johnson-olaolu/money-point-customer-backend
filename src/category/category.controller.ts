@@ -14,7 +14,7 @@ export class CategoryController {
     ){}
 
     @Get()
-    async getAllcategories () {
+    async getAllCategories () {
         return await this.categoryService.getAllCategories()
     }
 
@@ -28,9 +28,19 @@ export class CategoryController {
         return await this.faqService.getAllFaq()
     }
 
+    @Get("/faq/:faqId")
+    async getSingleFaq (@Param("faqId", ParseIntPipe) faqId : number) {
+        return await this.faqService.getSingleFaq(faqId)
+    }
+
     @Post("/faq")
-    async createNewFaq (createFaqDto : CreateFaqDto) {
+    async createNewFaq (@Body() createFaqDto : CreateFaqDto) {
         return await this.faqService.addNewFaq(createFaqDto)
+    }
+
+    @Get("/:categoryId")
+    async getSingleCategory(@Param("categoryId", ParseIntPipe) categoryId : number) {
+        return await this.categoryService.getSingleCategory(categoryId)
     }
 
     @Put("/:categoryId")

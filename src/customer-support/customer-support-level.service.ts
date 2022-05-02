@@ -21,6 +21,11 @@ export class CustomerSupportLevelService {
         return levels
     }
 
+    async getSingleCustomerSupportLevel(levelId : number): Promise<CustomerSupportLevel> {
+        const level = await this.customerSupportLevelRepository.findOne(levelId);
+        return level
+    }
+
     async createCustomerSupportLevel(
         createCustomerSupportLevelDto: CreateCustomerSupportLevelDto,
     ): Promise< CustomerSupportLevel> {
