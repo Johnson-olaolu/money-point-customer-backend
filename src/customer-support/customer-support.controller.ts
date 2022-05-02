@@ -12,6 +12,7 @@ import { CustomerSupportLevelService } from './customer-support-level.service';
 import { CustomerSupportService } from './customer-support.service';
 import { CreateCustomerSupportDto } from './dto/createCustomerSupportDto';
 import { CreateCustomerSupportLevelDto } from './dto/createCustomerSupportLevelDto';
+import { UpdateCustomerSupportDto} from './dto/updateCustomerSupportDto';
 import { UpdateCustomerSupportLevelDto } from './dto/updateCustomerSupportLevelDto';
 
 @Controller('customer-support')
@@ -60,5 +61,20 @@ export class CustomerSupportController {
     @Post()
     async createCustomerSupport ( @Body() createCustomerSupportDto : CreateCustomerSupportDto) {
         return await this.customerSupportService.createCustomerSupport(createCustomerSupportDto)
+    }
+
+    @Get("/:customerSupportId")
+    async getSingleCustomerSupport ( @Param("customerSupportId", ParseIntPipe) customerSupportId : number) {
+        return await this.customerSupportService.getSingleCustomerSupport(customerSupportId)
+    }
+
+    @Delete("/:customerSupportId")
+    async deleteCustomerSupport ( @Param("customerSupportId", ParseIntPipe) customerSupportId : number) {
+        return await this.customerSupportService.deleteCustomerSupport(customerSupportId)
+    }
+
+    @Put("/:customerSupportId")
+    async updateCustomerSupport ( @Param("customerSupportId", ParseIntPipe)  customerSupportId : number, @Body() updateCustomerSupportDto : UpdateCustomerSupportDto) {
+        return await this.customerSupportService.updateCustomerSupport(customerSupportId, updateCustomerSupportDto)
     }
 }

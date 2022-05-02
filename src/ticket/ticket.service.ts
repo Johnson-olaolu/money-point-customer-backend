@@ -10,35 +10,78 @@ import { ticketStatusTypes } from './ticket.enum';
 import { TicketRepository } from './ticket.repository';
 import * as uniqid from 'uniqid';
 import { CategoryService } from 'src/category/category.service';
+import { UserRepository } from 'src/user/user.repository';
+import { RoleRepository } from 'src/user/role.respository';
 
 @Injectable()
 export class TicketService {
     constructor(
         @InjectRepository(TicketRepository)
         private ticketRepository: TicketRepository,
+        @InjectRepository(UserRepository)
+        private userRepository: UserRepository,
+        @InjectRepository(RoleRepository)
+        private roleRepository: RoleRepository,
         @InjectRepository(TicketLogsRepository)
         private ticketLogsRepository: TicketLogsRepository,
-        private categoryService : CategoryService
+        private categoryService: CategoryService,
     ) {}
 
     //create new Ticket
     createNewTicket = async (
         createTicketDto: CreateTicketDto,
     ): Promise<Ticket> => {
-        const { title, description, agentEmail, categoryId, subCategory , email} = createTicketDto;
+        const {
+            title,
+            description,
+            agentEmail,
+            categoryId,
+            subCategory,
+            email,
+        } = createTicketDto;
 
         const presentDate = moment().format('YYYYMMDD');
         const ticketRef = uniqid(`${title[0]}-`, `-${presentDate}`);
-        const category = await this.categoryService.getSingleCategory(categoryId)
+        const category = await this.categoryService.getSingleCategory(
+            categoryId,
+        );
+
+        if (!category) {
+            throw new NotFoundException(
+                `Cuold not find Category with id ${categoryId}`,
+            );
+        }
+        if (category.subCategories.includes(subCategory) == false) {
+            throw new NotFoundException(
+                `Could not find sub category: ${subCategory} in category : ${category.title}`,
+            );
+        }
+
+        if (agentEmail) {
+            const agentRole = await this.roleRepository.findOne({
+                name: 'agent',
+            });
+            const agent = await this.userRepository.findOne({
+                email: agentEmail,
+                role: agentRole,
+            });
+
+            if (!agent) {
+                throw new NotFoundException(
+                    `Cuold not find Agent with email ${agentEmail}`,
+                );
+            }
+        }
+
         const newTicketData = {
             title: title,
             description: description,
             status: ticketStatusTypes.OPENED,
             ticketRef: ticketRef,
-            category : category,
-            agentEmail : agentEmail,
-            email : email,
-            subCategory : subCategory
+            category: category,
+            agentEmail: agentEmail,
+            email: email,
+            subCategory: subCategory,
         };
 
         const newTicket = await this.ticketRepository.createNewTicket(
@@ -59,24 +102,31 @@ export class TicketService {
         return tickets;
     }
 
-    async getTicketById(ticketId : number): Promise<Ticket > {
+    async getTicketById(ticketId: number): Promise<Ticket> {
         const ticket = await this.ticketRepository.findOne(ticketId);
 
+        if (!ticket) {
+            throw new NotFoundException(
+                `Could not find ticket with this id ${ticketId}`,
+            );
+        }
         return ticket;
     }
 
-    async getTicketByRef(ticketRef : string) : Promise<Ticket> {
-        const ticket = await this.ticketRepository.findOne({ticketRef : ticketRef})
+    async getTicketByRef(ticketRef: string): Promise<Ticket> {
+        const ticket = await this.ticketRepository.findOne({
+            ticketRef: ticketRef,
+        });
 
-        if(!ticket) {
-            throw new NotFoundException(`Could not find ticket with ticketRef: ${ticketRef}`)
+        if (!ticket) {
+            throw new NotFoundException(
+                `Could not find ticket with ticketRef: ${ticketRef}`,
+            );
         }
-        return ticket
+        return ticket;
     }
 
-    async deleteTicket(
-        ticketId : number,
-    ): Promise<string > {
+    async deleteTicket(ticketId: number): Promise<string> {
         const ticketToDelete = await this.ticketRepository.findOne(ticketId);
 
         if (!ticketToDelete) {
@@ -85,13 +135,13 @@ export class TicketService {
 
         await this.ticketRepository.delete(ticketId);
 
-        return `Ticket ${ticketToDelete.ticketRef}: ${ticketToDelete.title} deleted`
+        return `Ticket ${ticketToDelete.ticketRef}: ${ticketToDelete.title} deleted`;
     }
 
     async updateTicket(
-        ticketId : number,
+        ticketId: number,
         updateTicketDto: UpdateTicketDto,
-    ): Promise<Ticket > {
+    ): Promise<Ticket> {
         const ticketToUpdate = await this.ticketRepository.findOne(ticketId);
         const { title, description } = updateTicketDto;
 
@@ -120,11 +170,11 @@ export class TicketService {
         };
 
         await this.ticketLogsRepository.createNewTicketLog(newTicketLogData);
-        return  ticketToUpdate
+        return ticketToUpdate;
     }
 
     async updateTicketStatus(
-        ticketId : number,
+        ticketId: number,
         ticketStatus: ticketStatusTypes,
     ): Promise<Ticket> {
         const ticketToUpdate = await this.ticketRepository.findOne(ticketId);
@@ -137,6 +187,6 @@ export class TicketService {
 
         await ticketToUpdate.save;
 
-        return  ticketToUpdate
+        return ticketToUpdate;
     }
 }

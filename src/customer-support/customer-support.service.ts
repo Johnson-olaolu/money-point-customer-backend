@@ -11,6 +11,7 @@ import { CreateCustomerSupportDto } from './dto/createCustomerSupportDto';
 import { CustomerSupport } from './customer-support.entity';
 import { CustomerSupportRepository } from './customer-support.repository';
 import { UserService } from 'src/user/user.service';
+import { UpdateCustomerSupportDto } from './dto/updateCustomerSupportDto';
 
 @Injectable()
 export class CustomerSupportService {
@@ -68,5 +69,42 @@ export class CustomerSupportService {
     async getAllCustomerSupport(): Promise<CustomerSupport[]> {
         const customerSupports = await this.customerSupportRepository.find();
         return customerSupports;
+    }
+
+    async getSingleCustomerSupport(customerSupportId : number ): Promise<CustomerSupport> {
+        const customerSupport = await this.customerSupportRepository.findOne(customerSupportId)
+        if(!customerSupport) {
+            throw new NotFoundException(`Cannot find customer support for id ${customerSupportId}`)
+        }
+        return customerSupport
+    }
+
+    async deleteCustomerSupport(customerSupportId : number ) : Promise<string> {
+        const customerSupport = await this.customerSupportRepository.findOne(customerSupportId)
+
+        if(!customerSupport) {
+            throw new NotFoundException(`Cannot find customer support for id ${customerSupportId}`)
+        }
+        await this.customerSupportRepository.delete(customerSupportId)
+        return `Customer Support ${customerSupportId} deleted succesfully`
+    }
+
+    async updateCustomerSupport (customerSupportId : number, updateCustomerSupportDto : UpdateCustomerSupportDto) : Promise <CustomerSupport> {
+        const { customerSupportLevelId} = updateCustomerSupportDto
+        const customerSupport = await this.customerSupportRepository.findOne(customerSupportId)
+
+        if(!customerSupportId) {
+            throw new NotFoundException(`Cannot find customer support for id ${customerSupportId}`)
+        }
+
+        const customerSupportLevel = await this.customerSupportLevelRepository.findOne( customerSupportLevelId)
+        if(!customerSupportLevel) {
+            throw new NotFoundException(`Cannot find customer support Level for id ${customerSupportLevelId}`)
+        }
+
+        customerSupport.level = customerSupportLevel
+        await customerSupport.save()
+
+        return customerSupport
     }
 }

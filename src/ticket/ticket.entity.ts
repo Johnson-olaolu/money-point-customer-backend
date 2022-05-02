@@ -47,7 +47,9 @@ export class Ticket extends BaseEntity {
     })
     ticketRef: string;
 
-    @Column()
+    @Column({
+        nullable : true
+    })
     agentEmail : string
 
     @CreateDateColumn()
