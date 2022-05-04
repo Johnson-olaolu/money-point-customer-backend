@@ -12,6 +12,7 @@ import * as uniqid from 'uniqid';
 import { CategoryService } from 'src/category/category.service';
 import { UserRepository } from 'src/user/user.repository';
 import { RoleRepository } from 'src/user/role.respository';
+import { FirebaseApp } from 'src/services/firebase.service';
 
 @Injectable()
 export class TicketService {
@@ -25,6 +26,7 @@ export class TicketService {
         @InjectRepository(TicketLogsRepository)
         private ticketLogsRepository: TicketLogsRepository,
         private categoryService: CategoryService,
+        private firebaseApp: FirebaseApp,
     ) {}
 
     //create new Ticket
@@ -88,6 +90,21 @@ export class TicketService {
             newTicketData,
         );
 
+        const firebaseTicketRef = this.firebaseApp.db().ref("ticket")
+
+        const firebaseTicketData = {
+            title: newTicket.title,
+            description: newTicket.description,
+            status: newTicket.status,
+            ticketRef: newTicket.ticketRef,
+            category: newTicket.category.title,
+            agentEmail: newTicket.agentEmail,
+            email: newTicket.email,
+            subCategory: newTicket.subCategory,
+            id : newTicket.id,
+            createdAt : newTicket.created_at
+        }
+        firebaseTicketRef.child(ticketRef).set(firebaseTicketData)
         const newTicketLogData = {
             ticketId: newTicket.id,
             action: `new ticket ${newTicket.ticketRef}:${newTicket.title} created`,
@@ -188,5 +205,14 @@ export class TicketService {
         await ticketToUpdate.save;
 
         return ticketToUpdate;
+    }
+
+    async testFirebase() {
+        var ref = this.firebaseApp
+            .db()
+            .ref('restricted_access/secret_document');
+        ref.once('value', function (snapshot) {
+            console.log(snapshot.val());
+        });
     }
 }

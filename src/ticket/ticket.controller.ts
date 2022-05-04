@@ -52,11 +52,6 @@ export class TicketController {
         return await this.ticketService.updateTicket(ticketId, updateTicketDto)
    }
 
-   @Put("/update-status/:id")
-   async updateTicketStatus (@Param( "id", ParseIntPipe) ticketId : number, @Body() body : UpdateTicketStatusDto) {
-       const { status } = body
-        return await this.ticketService.updateTicketStatus(ticketId, status)
-   }
 
 }
 

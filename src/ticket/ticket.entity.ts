@@ -1,4 +1,5 @@
 import { Category } from 'src/category/category.entity';
+import { CustomerSupport } from 'src/customer-support/customer-support.entity';
 import {
     BaseEntity,
     Column,
@@ -42,6 +43,9 @@ export class Ticket extends BaseEntity {
     @JoinColumn()
     category : Category
 
+    @Column()
+    subCategory : string
+
     @Column({
         unique : true
     })
@@ -51,6 +55,9 @@ export class Ticket extends BaseEntity {
         nullable : true
     })
     agentEmail : string
+
+    @ManyToOne(()=> CustomerSupport)
+    assigned : CustomerSupport
 
     @CreateDateColumn()
     created_at: Date;
