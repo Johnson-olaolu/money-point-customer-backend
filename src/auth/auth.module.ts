@@ -6,11 +6,13 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import * as dotenv from "dotenv"
 import { JWTStrategy } from './jwt.strategy';
+import { CustomerSupportModule } from 'src/customer-support/customer-support.module';
 dotenv.config()
 
 @Module({
   imports : [
     UserModule,
+    CustomerSupportModule,
     PassportModule.register({defaultStrategy : "jwt"}),
     JwtModule.register({
       secret : process.env.JWT_SECRET,

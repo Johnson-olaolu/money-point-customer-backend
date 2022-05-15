@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { CreateTicketDto } from './dto/createTicketDto';
@@ -13,6 +13,9 @@ import { CategoryService } from 'src/category/category.service';
 import { UserRepository } from 'src/user/user.repository';
 import { RoleRepository } from 'src/user/role.respository';
 import { FirebaseApp } from 'src/services/firebase.service';
+import { SendMessageDto } from './dto/sendMessageDto';
+import { AssignTicketDto } from './dto/assignTicketDto';
+import { CustomerSupportRepository } from 'src/customer-support/customer-support.repository';
 
 @Injectable()
 export class TicketService {
@@ -25,6 +28,8 @@ export class TicketService {
         private roleRepository: RoleRepository,
         @InjectRepository(TicketLogsRepository)
         private ticketLogsRepository: TicketLogsRepository,
+        @InjectRepository(CustomerSupportRepository)
+        private customerSupportRepository : CustomerSupportRepository,
         private categoryService: CategoryService,
         private firebaseApp: FirebaseApp,
     ) {}
@@ -70,7 +75,7 @@ export class TicketService {
 
             if (!agent) {
                 throw new NotFoundException(
-                    `Cuold not find Agent with email ${agentEmail}`,
+                    `Could not find Agent with email ${agentEmail}`,
                 );
             }
         }
@@ -102,9 +107,14 @@ export class TicketService {
             email: newTicket.email,
             subCategory: newTicket.subCategory,
             id : newTicket.id,
-            createdAt : newTicket.created_at
+            createdAt : newTicket.createdAt
         }
         firebaseTicketRef.child(ticketRef).set(firebaseTicketData)
+        firebaseTicketRef.child(ticketRef).child("messages").push({
+            message : newTicket.description,
+            sentAt : newTicket.createdAt,
+            createdAt : newTicket.createdAt
+         })
         const newTicketLogData = {
             ticketId: newTicket.id,
             action: `new ticket ${newTicket.ticketRef}:${newTicket.title} created`,
@@ -207,12 +217,83 @@ export class TicketService {
         return ticketToUpdate;
     }
 
-    async testFirebase() {
-        var ref = this.firebaseApp
-            .db()
-            .ref('restricted_access/secret_document');
-        ref.once('value', function (snapshot) {
-            console.log(snapshot.val());
-        });
+    async assignCustomerSupportToTicket (assignTicketDto : AssignTicketDto ) {
+        const { assigneeId, customerSupportId, ticketRef} = assignTicketDto
+
+        const selectedCustomerSupport = await this.customerSupportRepository.findOne(customerSupportId)
+
+        if(!selectedCustomerSupport) {
+            throw new NotFoundException(
+                `Could not find customer support with customerSupportId: ${customerSupportId}`,
+            );
+        }
+
+        const selectedTicket = await this.ticketRepository.findOne({ticketRef : ticketRef})
+
+        if(!selectedTicket) {
+            throw new NotFoundException(
+                `Could not find ticket with ticketRef: ${ticketRef}`,
+            );
+        }
+        if(!selectedTicket.assigned || selectedTicket.escalated) {
+            selectedTicket.assigned = selectedCustomerSupport
+            await selectedTicket.save()
+        }else {
+            throw new ForbiddenException(" Ticket already assigned")
+        }
+
+        let firebaseTicketRef = this.firebaseApp.db().ref(`ticket/${ticketRef}`)
+        let user = customerSupportId ? `${selectedCustomerSupport.user.lastName} ${selectedCustomerSupport.user.firstName}` : null
+        firebaseTicketRef.child("messages").push({
+            message : `${selectedCustomerSupport.user.firstName} joined the chat` ,
+            sentAt : moment().toDate().toISOString(),
+            user : user,
+            createdAt : moment().toDate().toISOString()
+         })
+
+        const newTicketLogData = {
+            ticketId: selectedTicket.id,
+            action:  assigneeId ? `ticket ${ticketRef} assigned to ${customerSupportId}` : `admin ${ticketRef} assigned ticket ${ticketRef} assigned to ${customerSupportId}`,
+            actionDate: moment().toDate(),
+        };
+        await this.ticketLogsRepository.createNewTicketLog(newTicketLogData);
+
+        return `ticket : ${ticketRef} assigned to CustomerSupport : ${customerSupportId}`
     }
+
+    async sendNewMessage ( ticketRef : string , sendMessageDto : SendMessageDto) {
+        const selectedTicket = await this.ticketRepository.findOne({ ticketRef : ticketRef})
+        const { message, sentAt,  customerSupportId} = sendMessageDto
+        if(!selectedTicket) {
+            throw new NotFoundException(
+                `Could not find ticket with ticketRef: ${ticketRef}`,
+            );
+        }
+
+        const selectedCustomerSupport = await this.customerSupportRepository.findOne(customerSupportId)
+
+        if(!selectedCustomerSupport) {
+            throw new NotFoundException(
+                `Could not find customer support with customerSupportId: ${customerSupportId}`,
+            );
+        }
+
+        let firebaseTicketRef = this.firebaseApp.db().ref(`ticket/${ticketRef}`)
+        let user = customerSupportId ? `${selectedCustomerSupport.user.firstName} ${selectedCustomerSupport.user.lastName}` : null
+        firebaseTicketRef.child("messages").push({
+            message ,
+            sentAt,
+            user : user,
+            createdAt : moment().toDate().toISOString()
+         })
+
+        const newTicketLogData = {
+            ticketId: selectedTicket.id,
+            action: `${sendMessageDto.customerSupportId ? `userId:  ${customerSupportId}` : "customer"} sent message ${message} `,
+            actionDate: moment().toDate(),
+        };
+        await this.ticketLogsRepository.createNewTicketLog(newTicketLogData);
+        return  "message sent successfully";
+    }
+
 }

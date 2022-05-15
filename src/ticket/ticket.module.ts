@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryModule } from 'src/category/category.module';
+import { CustomerSupportModule } from 'src/customer-support/customer-support.module';
 import { FirebaseApp } from 'src/services/firebase.service';
 import { UserModule } from 'src/user/user.module';
 import { TicketLogsRepository } from './ticket-log.repository';
@@ -13,6 +14,7 @@ import { TicketService } from './ticket.service';
   imports : [
     CategoryModule,
     UserModule,
+    CustomerSupportModule,
     TypeOrmModule.forFeature([TicketRepository, TicketLogsRepository]),
   ],
   controllers: [TicketController],

@@ -13,6 +13,7 @@ export class AuthController {
         return loginResponse;
     }
 
+
     @UseGuards(AuthGuard('jwt'))
     @Get('/user')
     async getUser(@Request() req) {

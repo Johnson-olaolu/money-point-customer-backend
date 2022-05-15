@@ -24,7 +24,8 @@ export class User extends BaseEntity {
     email : string;
 
     @ManyToOne( () => Role , {
-        nullable : false
+        nullable : false,
+        eager : true
     })
     role : Role
 

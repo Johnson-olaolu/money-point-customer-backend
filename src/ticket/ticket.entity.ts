@@ -8,6 +8,7 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -39,7 +40,9 @@ export class Ticket extends BaseEntity {
     })
     email : string
 
-    @ManyToOne(() => Category)
+    @ManyToOne(() => Category, {
+        eager : true
+    })
     @JoinColumn()
     category : Category
 
@@ -56,12 +59,20 @@ export class Ticket extends BaseEntity {
     })
     agentEmail : string
 
-    @ManyToOne(()=> CustomerSupport)
+    @ManyToOne(()=> CustomerSupport, {
+        eager : true
+    })
+    @JoinColumn()
     assigned : CustomerSupport
 
+    @Column({
+        default : false
+    })
+    escalated : boolean;
+
     @CreateDateColumn()
-    created_at: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updated_at: Date;
+    updatedAt: Date;
 }
